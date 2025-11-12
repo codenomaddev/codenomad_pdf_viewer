@@ -10,9 +10,9 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 void main() {
-  runApp(const MaterialApp(
+  runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'CodeNomad PDF Viewer',
+    title: 'Nomad PDF Viewer',
     theme: ThemeData(
       primarySwatch: Colors.blue,
       useMaterial3: true,
@@ -26,10 +26,10 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
   final PdfViewerController _pdfViewerController = PdfViewerController();
   static const platform = MethodChannel('pdf_reader_channel');
@@ -104,6 +104,7 @@ class _HomePageState extends State<HomePage> {
         _loadPdf(result.files.single.path!);
       }
     } catch (e) {
+      debugPrint('Erro ao selecionar arquivo: $e');
       _showErrorSnackBar('Erro ao selecionar arquivo: $e');
     }
   }
@@ -115,28 +116,15 @@ class _HomePageState extends State<HomePage> {
     try {
       setState(() => _isLoading = true);
 
-      // Se for uma URI de conteúdo (content://), precisamos copiar o arquivo
-      if (_pdfPath!.startsWith('content://')) {
-        final uri = Uri.parse(_pdfPath!);
-        final tempDir = await getTemporaryDirectory();
-        final fileName = _pdfFileName ?? 'document.pdf';
-        final tempFile = File('${tempDir.path}/$fileName');
-
-        // Para Android, usa o caminho da URI diretamente
-        await Share.shareXFiles(
-          [XFile(_pdfPath!)],
-          subject: _pdfFileName ?? 'PDF Document',
-        );
-      } else {
-        // Para arquivos locais normais
-        await Share.shareXFiles(
-          [XFile(_pdfPath!)],
-          subject: _pdfFileName ?? 'PDF Document',
-        );
-      }
+      // Compartilha o PDF usando XFile (funciona tanto para URIs de conteúdo quanto arquivos locais)
+      await Share.shareXFiles(
+        [XFile(_pdfPath!)],
+        subject: _pdfFileName ?? 'PDF Document',
+      );
 
       _showSuccessSnackBar('PDF compartilhado com sucesso!');
     } catch (e) {
+      debugPrint('Erro ao compartilhar PDF: $e');
       _showErrorSnackBar('Erro ao compartilhar: $e');
     } finally {
       setState(() => _isLoading = false);
@@ -175,6 +163,7 @@ class _HomePageState extends State<HomePage> {
 
       _showSuccessSnackBar('PDF enviado para impressão!');
     } catch (e) {
+      debugPrint('Erro ao imprimir PDF: $e');
       _showErrorSnackBar('Erro ao imprimir: $e');
     } finally {
       setState(() => _isLoading = false);
@@ -185,31 +174,44 @@ class _HomePageState extends State<HomePage> {
   Future<void> _savePdf() async {
     if (_pdfPath == null) return;
 
+    debugPrint('=== Iniciando salvamento de PDF ===');
+    debugPrint('Caminho do PDF: $_pdfPath');
+    debugPrint('Nome do arquivo: $_pdfFileName');
+
     try {
       setState(() => _isLoading = true);
 
+      // Primeiro, lê os bytes do arquivo
+      Uint8List bytes;
+      if (_pdfPath!.startsWith('content://')) {
+        debugPrint('Lendo bytes de URI de conteúdo...');
+        final xFile = XFile(_pdfPath!);
+        bytes = await xFile.readAsBytes();
+      } else {
+        debugPrint('Lendo bytes de arquivo local...');
+        final sourceFile = File(_pdfPath!);
+        bytes = await sourceFile.readAsBytes();
+      }
+      debugPrint('Bytes lidos: ${bytes.length} bytes');
+
+      // Agora chama saveFile com os bytes
       String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Salvar PDF',
         fileName: _pdfFileName ?? 'document.pdf',
         type: FileType.custom,
         allowedExtensions: ['pdf'],
+        bytes: bytes,
       );
 
       if (outputPath != null) {
-        File sourceFile;
-
-        if (_pdfPath!.startsWith('content://')) {
-          // Para URIs de conteúdo, mostra mensagem de que já está salvo
-          _showSuccessSnackBar('O PDF já está salvo no dispositivo!');
-          return;
-        } else {
-          sourceFile = File(_pdfPath!);
-        }
-
-        await sourceFile.copy(outputPath);
+        debugPrint('PDF salvo com sucesso em: $outputPath');
         _showSuccessSnackBar('PDF salvo com sucesso!');
+      } else {
+        debugPrint('Usuário cancelou o salvamento');
       }
     } catch (e) {
+      debugPrint('ERRO ao salvar PDF: $e');
+      debugPrint('Stack trace: ${StackTrace.current}');
       _showErrorSnackBar('Erro ao salvar: $e');
     } finally {
       setState(() => _isLoading = false);
@@ -315,7 +317,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _pdfFileName ?? 'CodeNomad PDF Viewer',
+          _pdfFileName ?? 'Nomad PDF Viewer',
           style: const TextStyle(fontSize: 16),
           overflow: TextOverflow.ellipsis,
         ),
@@ -424,6 +426,8 @@ class _HomePageState extends State<HomePage> {
           key: _pdfViewerKey,
           controller: _pdfViewerController,
           onDocumentLoadFailed: (details) {
+            debugPrint('Erro ao carregar PDF via URI de conteúdo: ${details.error}');
+            debugPrint('Descrição: ${details.description}');
             _showErrorSnackBar('Erro ao carregar PDF: ${details.error}');
           },
         );
@@ -434,11 +438,15 @@ class _HomePageState extends State<HomePage> {
           key: _pdfViewerKey,
           controller: _pdfViewerController,
           onDocumentLoadFailed: (details) {
+            debugPrint('Erro ao carregar PDF de arquivo local: ${details.error}');
+            debugPrint('Descrição: ${details.description}');
             _showErrorSnackBar('Erro ao carregar PDF: ${details.error}');
           },
         );
       }
     } catch (e) {
+      debugPrint('Exceção ao construir visualizador de PDF: $e');
+      debugPrint('Stack trace: ${StackTrace.current}');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
