@@ -2,8 +2,10 @@ package com.example.codenomad_pdf_reader
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.provider.Settings
 import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -37,8 +39,29 @@ class MainActivity : FlutterActivity() {
                     result.success(pendingPdfPath)
                     pendingPdfPath = null // Limpa após consumir
                 }
+                "openDefaultAppSettings" -> {
+                    openDefaultAppSettings()
+                    result.success(true)
+                }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun openDefaultAppSettings() {
+        try {
+            // Para Android 7.0+ (API 24+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val intent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+                startActivity(intent)
+            } else {
+                // Para versões anteriores, abre as configurações gerais do app
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Erro ao abrir configurações: ${e.message}")
         }
     }
 
