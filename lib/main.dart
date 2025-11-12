@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:printing/printing.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -44,6 +45,96 @@ class HomePageState extends State<HomePage> {
     super.initState();
     _handleIntent();
     _setupMethodCallHandler();
+    _checkFirstRun();
+  }
+
+  /// Verifica se é a primeira vez que o app é executado
+  Future<void> _checkFirstRun() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasAskedDefaultApp = prefs.getBool('hasAskedDefaultApp') ?? false;
+
+      if (!hasAskedDefaultApp && Platform.isAndroid) {
+        // Aguarda um pouco para garantir que a UI está pronta
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) {
+          _showDefaultAppDialog();
+        }
+      }
+    } catch (e) {
+      debugPrint("Erro ao verificar primeira execução: $e");
+    }
+  }
+
+  /// Mostra o diálogo perguntando se deseja definir como app padrão
+  Future<void> _showDefaultAppDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.picture_as_pdf, color: Colors.blue),
+              SizedBox(width: 10),
+              Text('Definir como padrão?'),
+            ],
+          ),
+          content: const Text(
+            'Deseja usar o CodeNomad PDF Viewer como aplicativo padrão para abrir arquivos PDF?\n\n'
+            'Você poderá alterar isso nas configurações do Android a qualquer momento.',
+            style: TextStyle(fontSize: 15),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Agora não'),
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('hasAskedDefaultApp', true);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Sim, definir como padrão'),
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('hasAskedDefaultApp', true);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+                _openDefaultAppSettings();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Abre as configurações de apps padrão do Android
+  Future<void> _openDefaultAppSettings() async {
+    if (!Platform.isAndroid) return;
+
+    try {
+      await platform.invokeMethod('openDefaultAppSettings');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Nas configurações, procure por "Aplicativos padrão" ou "Abrir por padrão" '
+              'e selecione este app para arquivos PDF',
+            ),
+            duration: Duration(seconds: 5),
+            backgroundColor: Colors.blue,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Erro ao abrir configurações: $e");
+      _showErrorSnackBar('Erro ao abrir configurações: $e');
+    }
   }
 
   /// Configura o handler para receber notificações do Android/iOS
@@ -306,6 +397,16 @@ class HomePageState extends State<HomePage> {
                 _pdfViewerKey.currentState?.openBookmarkView();
               },
             ),
+            if (Platform.isAndroid)
+              ListTile(
+                leading: const Icon(Icons.check_circle_outline),
+                title: const Text('Definir como app padrão'),
+                subtitle: const Text('Configurar para abrir PDFs por padrão'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _openDefaultAppSettings();
+                },
+              ),
           ],
         ),
       ),
