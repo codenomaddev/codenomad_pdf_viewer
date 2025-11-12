@@ -43,3 +43,15 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Crash logs
+*.log
+hs_err_pid*.log
+
+# Local configuration
+.claude/settings.local.json
+
+# Temporary files
+*.tmp
+*.temp
+assets/icon/
