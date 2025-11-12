@@ -1,0 +1,1 @@
+- a cada comit realize changelog e versione o app.. pode ser minor ou major dependendo do tamanho da alteracao#

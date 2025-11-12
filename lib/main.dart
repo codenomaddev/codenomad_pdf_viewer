@@ -118,15 +118,18 @@ class HomePageState extends State<HomePage> {
     if (!Platform.isAndroid) return;
 
     try {
+      debugPrint('Abrindo configurações de app padrão...');
       await platform.invokeMethod('openDefaultAppSettings');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Nas configurações, procure por "Aplicativos padrão" ou "Abrir por padrão" '
-              'e selecione este app para arquivos PDF',
+              'Na página que abriu:\n'
+              '1. Toque em "Abrir por padrão"\n'
+              '2. Ative "Abrir links compatíveis"\n'
+              '3. Em "Links a abrir", adicione arquivos PDF',
             ),
-            duration: Duration(seconds: 5),
+            duration: Duration(seconds: 7),
             backgroundColor: Colors.blue,
           ),
         );
@@ -501,7 +504,7 @@ class HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 40),
                       const Text(
-                        'v1.1.0',
+                        'v1.1.1',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey,

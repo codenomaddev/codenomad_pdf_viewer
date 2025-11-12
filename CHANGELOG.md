@@ -5,6 +5,17 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.1.1] - 2025-11-12
+
+### Corrigido
+- Abertura de PDFs quando o app é definido como padrão no Android
+- Navegação para configurações de app padrão agora abre a página correta do app
+- Instruções melhoradas no diálogo de configuração de app padrão
+
+### Adicionado
+- Logging detalhado em MainActivity.kt para debug de problemas de abertura
+- Logs em todos os métodos de intent handling (onCreate, onNewIntent, handleIntent, getUriPath)
+
 ## [1.1.0] - 2025-11-11
 
 ### Adicionado
