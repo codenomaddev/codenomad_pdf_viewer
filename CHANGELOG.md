@@ -5,6 +5,14 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.1.2] - 2025-11-12
+
+### Adicionado
+- Ignorar crash logs do JVM (hs_err_pid*.log) no .gitignore
+- Ignorar configurações locais do Claude no .gitignore
+- Ignorar arquivos temporários no .gitignore
+- Ignorar pasta assets/icon/ (gerada automaticamente)
+
 ## [1.1.1] - 2025-11-12
 
 ### Corrigido

@@ -504,7 +504,7 @@ class HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 40),
                       const Text(
-                        'v1.1.1',
+                        'v1.1.2',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
