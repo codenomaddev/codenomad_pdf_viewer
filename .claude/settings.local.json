@@ -10,7 +10,9 @@
       "Bash(flutter analyze:*)",
       "Bash(flutter pub get:*)",
       "Bash(flutter pub add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nCorrigir problemas de build e melhorar funcionalidades do app\n\n- Atualizar Gradle de 8.3.0 para 8.7.0\n- Atualizar Android Gradle Plugin de 8.1.0 para 8.6.0\n- Atualizar Kotlin de 1.8.22 para 2.1.0\n- Otimizar configurações de memória do Gradle\n- Gerar ícones personalizados para Android e iOS\n- Renomear app para \"Nomad Pdf Viewer\"\n- Adicionar flag --verbose nas configurações de debug do VS Code\n- Corrigir função de salvar PDF para usar bytes (soluciona erro \"Bytes are required\")\n- Adicionar debugPrint em todos os pontos de erro para facilitar debug\n- Atualizar flutter_lints de 5.0.0 para 6.0.0\n- Corrigir avisos do linter\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

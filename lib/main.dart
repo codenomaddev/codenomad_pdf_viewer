@@ -398,6 +398,14 @@ class HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 40),
+                      const Text(
+                        'v1.1.0',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
                     ],
                   ),
                 )
